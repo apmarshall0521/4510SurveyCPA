@@ -77,35 +77,33 @@ html_content = f"""
     <style>
         body {{ font-family: sans-serif; margin: 20px; }}
         h1 {{ text-align: center; }}
-        .container {{ display: flex; flex-wrap: wrap; justify-content: space-around; }}
-        .chart {{ width: 100%; max-width: 800px; margin-bottom: 40px; }}
-        table {{ border-collapse: collapse; width: 100%; max-width: 600px; margin: 20px auto; }}
+        .main-wrapper {{ display: flex; flex-wrap: wrap; justify-content: space-around; gap: 20px; }}
+        .section {{ width: 45%; min-width: 400px; box-sizing: border-box; padding: 10px; border: 1px solid #eee; border-radius: 8px; }}
+        .chart {{ width: 100%; margin-bottom: 20px; }}
+        table {{ border-collapse: collapse; width: 100%; font-size: 0.9em; }}
         th, td {{ border: 1px solid #ddd; padding: 8px; text-align: left; }}
         th {{ background-color: #f2f2f2; }}
         tr:nth-child(even) {{ background-color: #f9f9f9; }}
+        h2 {{ text-align: center; }}
     </style>
 </head>
 <body>
     <h1>MAcc Program Course Rankings 2024</h1>
 
-    <div class="container">
-        <div class="chart">
-            {fig_core.to_html(full_html=False, include_plotlyjs='cdn')}
-        </div>
-        <div>
+    <div class="main-wrapper">
+        <div class="section">
             <h2>Core Courses (Ranked by Preference)</h2>
+            <div class="chart">
+                {fig_core.to_html(full_html=False, include_plotlyjs='cdn')}
+            </div>
             {core_df[['Rank', 'Course', 'Mean Rank']].to_html(index=False, float_format='%.2f')}
         </div>
-    </div>
 
-    <hr>
-
-    <div class="container">
-        <div class="chart">
-            {fig_elective.to_html(full_html=False, include_plotlyjs='cdn')}
-        </div>
-        <div>
+        <div class="section">
             <h2>Elective Courses (Rated 1-5)</h2>
+            <div class="chart">
+                {fig_elective.to_html(full_html=False, include_plotlyjs='cdn')}
+            </div>
             {elective_df[['Rank', 'Course', 'Mean Rating']].to_html(index=False, float_format='%.2f')}
         </div>
     </div>

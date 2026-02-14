@@ -3,6 +3,9 @@ import plotly.express as px
 import os
 import re
 
+# Ensure output directory exists
+os.makedirs('public', exist_ok=True)
+
 # Load data
 df = pd.read_excel('Grad Program Exit Survey Data 2024.xlsx', header=1)
 
@@ -40,6 +43,9 @@ for col in core_cols:
 core_df = pd.DataFrame(core_data).sort_values('Mean Rank', ascending=True)
 core_df['Rank'] = range(1, len(core_df) + 1)
 
+# Save processed Core data
+core_df.to_csv('public/core_courses_ranking.csv', index=False)
+
 # Process Elective Courses (Ratings)
 elective_data = []
 for col in elective_cols:
@@ -51,22 +57,26 @@ for col in elective_cols:
 elective_df = pd.DataFrame(elective_data).sort_values('Mean Rating', ascending=False)
 elective_df['Rank'] = range(1, len(elective_df) + 1)
 
-# Visualization
-# Combine for a single chart? The scales are different.
-# I'll make two subplots using plotly.graph_objects or just two separate charts in HTML.
-# But plotly express is easier. Let's make a faceted chart? No, y-axis units differ.
-# I'll create two bar charts and combine them in HTML.
+# Save processed Elective data
+elective_df.to_csv('public/elective_courses_rating.csv', index=False)
 
+# Visualization
 # Core Chart (Lower is better, but bar charts usually show magnitude. Maybe invert axis?)
 # Or just show the value.
 fig_core = px.bar(core_df, x='Course', y='Mean Rank', title='Core Course Rankings (Lower is Better)',
                   text_auto='.2f', color='Mean Rank', color_continuous_scale='Viridis_r')
 fig_core.update_layout(yaxis=dict(autorange="reversed")) # Invert y-axis so Rank 1 is at top
 
+# Save Core Chart
+fig_core.write_html('public/core_chart.html')
+
 # Elective Chart (Higher is better)
 fig_elective = px.bar(elective_df, x='Course', y='Mean Rating', title='Elective Course Ratings (Scale 1-5)',
                       text_auto='.2f', color='Mean Rating', color_continuous_scale='Viridis')
 fig_elective.update_layout(yaxis=dict(range=[0, 5]))
+
+# Save Elective Chart
+fig_elective.write_html('public/elective_chart.html')
 
 # Generate HTML
 html_content = f"""
@@ -85,6 +95,9 @@ html_content = f"""
         th {{ background-color: #f2f2f2; }}
         tr:nth-child(even) {{ background-color: #f9f9f9; }}
         h2 {{ text-align: center; }}
+        .download-links {{ text-align: center; margin-top: 10px; margin-bottom: 20px; }}
+        .download-links a {{ margin: 0 10px; text-decoration: none; color: #007bff; }}
+        .download-links a:hover {{ text-decoration: underline; }}
     </style>
 </head>
 <body>
@@ -96,6 +109,10 @@ html_content = f"""
             <div class="chart">
                 {fig_core.to_html(full_html=False, include_plotlyjs='cdn')}
             </div>
+            <div class="download-links">
+                <a href="core_courses_ranking.csv" download>Download Data (CSV)</a> |
+                <a href="core_chart.html" download>Download Chart (HTML)</a>
+            </div>
             {core_df[['Rank', 'Course', 'Mean Rank']].to_html(index=False, float_format='%.2f')}
         </div>
 
@@ -104,15 +121,16 @@ html_content = f"""
             <div class="chart">
                 {fig_elective.to_html(full_html=False, include_plotlyjs='cdn')}
             </div>
+            <div class="download-links">
+                <a href="elective_courses_rating.csv" download>Download Data (CSV)</a> |
+                <a href="elective_chart.html" download>Download Chart (HTML)</a>
+            </div>
             {elective_df[['Rank', 'Course', 'Mean Rating']].to_html(index=False, float_format='%.2f')}
         </div>
     </div>
 </body>
 </html>
 """
-
-# Ensure output directory exists
-os.makedirs('public', exist_ok=True)
 
 # Write to file
 with open('public/index.html', 'w') as f:
